@@ -37,7 +37,7 @@ public class RESTController{
     @RequestMapping("/")
     @ResponseBody
     String home() {
-        return "Hello World!";
+        return "Hello AdDrinks!";
     }
 	
 	// ------  Get User by ID  -------
