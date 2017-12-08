@@ -18,7 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import de.addrinks.backend.error.HTTPError;
+import de.addrinks.backend.model.Kategorie;
+import de.addrinks.backend.model.Produkt;
 import de.addrinks.backend.model.User;
+import de.addrinks.backend.service.KategorieServiceImpl;
+import de.addrinks.backend.service.ProductServiceImpl;
 import de.addrinks.backend.service.UserServiceImpl;
 
 /*
@@ -33,6 +37,12 @@ public class RESTController{
 	
 	@Autowired
 	UserServiceImpl userService;
+	
+	@Autowired
+	ProductServiceImpl produktService;
+	
+	@Autowired
+	KategorieServiceImpl kategorieService;
 	
     @RequestMapping("/")
     @ResponseBody
@@ -178,4 +188,187 @@ public class RESTController{
         userService.deleteAllUsers();
         return new ResponseEntity<User>(HttpStatus.NO_CONTENT);
     }
+    
+    //---------- GetProdukt -----------
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@RequestMapping(value = "/produkt/{id}", method = RequestMethod.GET)
+	public ResponseEntity<?> getProdukt(@PathVariable("id") UUID id) {
+		logger.info("Fetching Produkt with id {}", id);
+		
+		Produkt produkt = produktService.getProdukt(id);
+		if(produkt == null){
+			logger.error("Produkt with id {} not found", id);
+			return new ResponseEntity(new HTTPError("Produkt with id "+id+" not found"), HttpStatus.NOT_FOUND);
+		}
+		
+		return new ResponseEntity<Produkt>(produkt, HttpStatus.OK);
+	}
+	
+	//--------- GetProdukts -----------
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@RequestMapping(value = "/produkts", method = RequestMethod.GET)
+	public ResponseEntity<List<Produkt>> getProdukts(){
+		logger.info("Fetching all Produkts");
+		
+		List<Produkt> produkts = produktService.getProdukts();
+		if(produkts.isEmpty()) {
+			logger.info("No produkts in database");
+			return new ResponseEntity(new HTTPError("No produkts in database"), HttpStatus.NOT_FOUND);
+		}
+		
+		return new ResponseEntity<List<Produkt>>(produkts, HttpStatus.OK);
+	}
+	
+	//-------- create Produkt ------------
+	/*
+	 * {
+	 *	"name": "Senseo",
+	 *	"kategorie": "123-321-123-2",
+	 *	"bestand": "150",
+	 *	"beschreibung": "Senseo Tabs. Die Senseotabs haben ein besonderes Geschmacksaroma.",
+	 *	"punkte": "4",
+	 *	"uri": "https://www.senseo.de/siteassets/kaffee/klassiker/nmsenseo_classic_left_relaunch_ge_cw23_2015.png?preset=blendpage-page-image",
+	 *	"hausnummer": "40",
+	 *	"einkaufspreis": "2,49",
+	 *	"waehrung": "EUR"
+	 *}
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@RequestMapping(value = "/produkt", method = RequestMethod.POST)
+	public ResponseEntity<?> createProdukt(@RequestBody Produkt produkt, UriComponentsBuilder uriCB) throws Exception{
+        logger.info("Creating Produkt : {}", produkt);
+        
+        //TODO Id is never the same - therefore use another combination
+        if (produktService.produktExist(produkt.getId())) {
+            logger.error("Unable to create. A Produkt with name {} already exist", produkt.getName());
+            return new ResponseEntity(new HTTPError("Unable to create. A Produkt with name " + 
+            produkt.getName() + " already exist."),HttpStatus.CONFLICT);
+        }
+        produktService.saveProdukt(produkt);
+ 
+        HttpHeaders headers = new HttpHeaders();
+        
+        headers.setLocation(uriCB.path("/produkt/{id}").buildAndExpand(produkt.getId()).toUri());
+        return new ResponseEntity<String>(headers, HttpStatus.CREATED);
+	}
+	
+	//----------- updateProdukt --------------
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@RequestMapping(value = "/produkt/{id}", method = RequestMethod.PUT)
+	public ResponseEntity<?> updateProdukt(@PathVariable UUID id, @RequestBody Produkt produkt) throws Exception{
+		logger.info("Updating Produkt with id {}", id);
+		
+		if(!(produktService.produktExist(produkt.getId()))){
+			logger.error("Unable to update. A produkt with name {} does not exist", produkt.getName());
+			return new ResponseEntity(new HTTPError("Unable to update. Produkt does not exist."), HttpStatus.NOT_FOUND);
+		}
+		
+		produktService.updateProdukt(id, produkt);
+		
+		return new ResponseEntity<Produkt>(produkt, HttpStatus.OK);
+	}
+	
+	//----------- createProduktsBulk ---------
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@RequestMapping(value = "/produktsBulk/", method = RequestMethod.POST)
+	public ResponseEntity<?> createProduktsBulk(@RequestBody List<Produkt> produkts){
+        logger.info("Creating Produkts bulk");
+        
+        long[] ids = produktService.produktBulkExist(produkts);
+        if (ids.length > 0) {
+            logger.error("Unable to create. Produkts with ids {} already exist", ids.toString());
+            return new ResponseEntity(new HTTPError("Unable to create. Produkts with ids " + 
+            ids.toString() + " already exist."),HttpStatus.CONFLICT);
+        }
+        produktService.saveProduktBulk(produkts);
+ 
+        //TODO httpheaders is missing
+        return new ResponseEntity(HttpStatus.CREATED);
+	}
+	
+	//----------- updateProduktsBulk ---------
+	//TODO
+	
+	//----------- deleteProdukt --------------
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@RequestMapping(value = "/produkt/{id}", method = RequestMethod.DELETE)
+	public ResponseEntity<?> deleteProdukt(@PathVariable UUID id){
+		logger.info("Deleting produkt with id {}", id);
+		
+		if(!(produktService.produktExist(id))){
+			logger.error("Unable to delete. A produkt with id {} does not exist", id);
+			return new ResponseEntity(new HTTPError("Unable to delete. A produkt with id "+id+" does not exist."), HttpStatus.NOT_FOUND);
+		}
+		
+		produktService.deleteProduktById(id);
+		return new ResponseEntity<Produkt>(HttpStatus.NO_CONTENT);
+	}
+	
+	//----------- deleteAllProdukts ----------
+    @RequestMapping(value = "/produkts", method = RequestMethod.DELETE)
+    public ResponseEntity<Produkt> deleteAllProdukts() {
+        logger.info("Deleting All Users");
+ 
+        produktService.deleteAllProdukts();
+        return new ResponseEntity<Produkt>(HttpStatus.NO_CONTENT);
+    }
+	
+	//----------- getKategorie -----------
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@RequestMapping(value = "/kategorie/{id}", method = RequestMethod.GET)
+	public ResponseEntity<?> getKategorie(@PathVariable("id") UUID id) {
+		logger.info("Fetching Kategorie with id {}", id);
+		
+		Kategorie kategorie = kategorieService.getKategorie(id);
+		if(kategorie == null){
+			logger.error("Kategorie with id {} not found", id);
+			return new ResponseEntity(new HTTPError("Kategorie with id "+id+" not found"), HttpStatus.NOT_FOUND);
+		}
+		
+		return new ResponseEntity<Kategorie>(kategorie, HttpStatus.OK);
+	}
+	
+    //----------- getKategorien ----------
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@RequestMapping(value = "/kategorien", method = RequestMethod.GET)
+	public ResponseEntity<List<Kategorie>> getKategorien(){
+		logger.info("Fetching all Kategories");
+		
+		List<Kategorie> kategorien = kategorieService.getKategorien();
+		if(kategorien.isEmpty()) {
+			logger.info("No produkts in database");
+			return new ResponseEntity(new HTTPError("No produkts in database"), HttpStatus.NOT_FOUND);
+		}
+		
+		return new ResponseEntity<List<Kategorie>>(kategorien, HttpStatus.OK);
+	}
+	
+    //----------- createKategorie --------
+	/*
+	 * {
+	 *	"name": "Tabs",
+	 *	"beschreibung": "Tabs sind mit Filterpapier umschlossene Kaffeemengen für eine oder zwei Tassen."
+	 *}
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@RequestMapping(value = "/kategorie", method = RequestMethod.POST)
+	public ResponseEntity<?> createKategorie(@RequestBody Kategorie kategorie, UriComponentsBuilder uriCB) throws Exception{
+        logger.info("Creating Kategorie : {}", kategorie);
+        
+        //TODO Id is never the same - therefore use another combination
+        if (kategorieService.kategorieExists(kategorie.getId())) {
+            logger.error("Unable to create. A Kategorie with name {} already exist", kategorie.getKategorieName());
+            return new ResponseEntity(new HTTPError("Unable to create. A Produkt with name " + 
+            kategorie.getKategorieName() + " already exist."),HttpStatus.CONFLICT);
+        }
+        kategorieService.saveKategorie(kategorie);
+ 
+        HttpHeaders headers = new HttpHeaders();
+        
+        headers.setLocation(uriCB.path("/kategorie/{id}").buildAndExpand(kategorie.getId()).toUri());
+        return new ResponseEntity<String>(headers, HttpStatus.CREATED);
+	}
+	
+    //----------- updateKategorie --------
+	//TODO
 }

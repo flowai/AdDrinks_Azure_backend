@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
 	private static final String COLLECTIONNAME = "user";
 	
 	@Autowired
-	MongoDBController<User> mongoDBController;
+	MongoDBController mongoDBController;
 
 	@Override
 	public User getUser(UUID id) {
@@ -45,13 +45,13 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public void saveUser(User user) throws Exception {
 		logger.info("Save User of Entity");
-		mongoDBController.insertDocument(user);
+		mongoDBController.insertUser(user);
 	}
 
 	@Override
 	public void updateUser(UUID id, User user) throws Exception {
 		logger.info("Update User of Entity");
-		mongoDBController.updateDocument(id, user);
+		mongoDBController.updateUser(id, user);
 	}
 
 	@Override
@@ -82,7 +82,6 @@ public class UserServiceImpl implements UserService {
 	public void deleteAllUsers() {
 		logger.info("Delete all Users");
 		mongoDBController.deleteAllUsers();
-		
 	}
 
 }

@@ -12,12 +12,15 @@ import org.mongodb.morphia.annotations.Property;
 @Entity("produkt")
 public class Produkt {
 
+	public UUID getId() {
+		return id;
+	}
 	@Id
 	@Property("id")
 	protected UUID id;
 	
 	private String Name;
-	private Kategorie Kategorie;
+	private UUID Kategorie;
 	
 	private int Bestand;
 	private String Beschreibung;
@@ -35,10 +38,10 @@ public class Produkt {
 	public void setName(String name) {
 		Name = name;
 	}
-	public Kategorie getKategorie() {
+	public UUID getKategorie() {
 		return Kategorie;
 	}
-	public void setKategorie(Kategorie kategorie) {
+	public void setKategorie(UUID kategorie) {
 		Kategorie = kategorie;
 	}
 	public int getBestand() {

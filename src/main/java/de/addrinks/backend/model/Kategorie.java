@@ -17,6 +17,9 @@ public class Kategorie {
 	private String Beschreibung;
 	
 	
+	public UUID getId() {
+		return id;
+	}
 	public String getKategorieName() {
 		return KategorieName;
 	}
