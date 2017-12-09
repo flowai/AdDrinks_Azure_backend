@@ -31,6 +31,9 @@ public class Produkt {
 	private BigDecimal Einkaufspreis;
 	private Currency Waehrung;
 	
+	public Produkt(){
+		id = UUID.randomUUID();
+	}
 	
 	public String getName() {
 		return Name;

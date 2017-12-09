@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import de.addrinks.backend.azure.MongoDBController;
 import de.addrinks.backend.model.Produkt;
-import de.addrinks.backend.model.User;
 
 @Service
 public class ProductServiceImpl implements ProductService {

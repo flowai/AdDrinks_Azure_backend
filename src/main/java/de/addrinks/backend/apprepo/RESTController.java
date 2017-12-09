@@ -357,9 +357,9 @@ public class RESTController{
         
         //TODO Id is never the same - therefore use another combination
         if (kategorieService.kategorieExists(kategorie.getId())) {
-            logger.error("Unable to create. A Kategorie with name {} already exist", kategorie.getKategorieName());
+            logger.error("Unable to create. A Kategorie with name {} already exist", kategorie.getKategoriename());
             return new ResponseEntity(new HTTPError("Unable to create. A Produkt with name " + 
-            kategorie.getKategorieName() + " already exist."),HttpStatus.CONFLICT);
+            kategorie.getKategoriename() + " already exist."),HttpStatus.CONFLICT);
         }
         kategorieService.saveKategorie(kategorie);
  
