@@ -1,6 +1,7 @@
 package de.addrinks.backend.model;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.net.URL;
 import java.util.Currency;
 import java.util.UUID;
@@ -26,10 +27,10 @@ public class Produkt {
 	private String Beschreibung;
 	
 	private int Punkte;
-	private URL uri; 
+	private URI uri; 
 	
 	private BigDecimal Einkaufspreis;
-	private Currency Waehrung;
+	private String Waehrung;
 	
 	public Produkt(){
 		id = UUID.randomUUID();
@@ -65,10 +66,10 @@ public class Produkt {
 	public void setPunkte(int punkte) {
 		Punkte = punkte;
 	}
-	public URL getUri() {
+	public URI getUri() {
 		return uri;
 	}
-	public void setUri(URL uri) {
+	public void setUri(URI uri) {
 		this.uri = uri;
 	}
 	public BigDecimal getEinkaufspreis() {
@@ -78,9 +79,10 @@ public class Produkt {
 		Einkaufspreis = einkaufspreis;
 	}
 	public Currency getWaehrung() {
-		return Waehrung;
+		return Currency.getInstance(Waehrung);
 	}
 	public void setWaehrung(Currency waehrung) {
-		Waehrung = waehrung;
+		//Convert String to Currency. Morphia is not able to do.
+		Waehrung = waehrung.toString();
 	}
 }

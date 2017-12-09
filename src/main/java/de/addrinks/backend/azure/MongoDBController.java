@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 
+import de.addrinks.backend.model.Bestellung;
 import de.addrinks.backend.model.Kategorie;
 import de.addrinks.backend.model.Produkt;
 import de.addrinks.backend.model.User;
@@ -208,6 +209,24 @@ public class MongoDBController {
 		//TODO Check if legit
 		final Query<Kategorie> query = datastore.createQuery(Kategorie.class);
 		datastore.delete(query);
+	}
+
+	public void insertBestellung(Bestellung bestellung) throws Exception {
+		logger.info("Save document to database");
+		
+		try{
+			Key<Bestellung> key = datastore.save(bestellung);			
+		}catch(Exception e){
+			logger.error("Document was not saved to Database.");
+			throw new Exception("Document was not saved to Database", e);
+		}
+	}
+
+	public List<Bestellung> getBestellungen() {
+		logger.info("Get all Bestellungen");
+		
+		List<Bestellung> bestellungen = datastore.createQuery(Bestellung.class).asList();
+		return bestellungen;
 	}
 	
 

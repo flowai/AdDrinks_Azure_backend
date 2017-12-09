@@ -18,9 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import de.addrinks.backend.error.HTTPError;
+import de.addrinks.backend.model.Bestellung;
 import de.addrinks.backend.model.Kategorie;
 import de.addrinks.backend.model.Produkt;
 import de.addrinks.backend.model.User;
+import de.addrinks.backend.service.BestellungService;
+import de.addrinks.backend.service.BestellungServiceImpl;
 import de.addrinks.backend.service.KategorieServiceImpl;
 import de.addrinks.backend.service.ProductServiceImpl;
 import de.addrinks.backend.service.UserServiceImpl;
@@ -43,6 +46,9 @@ public class RESTController{
 	
 	@Autowired
 	KategorieServiceImpl kategorieService;
+	
+	@Autowired
+	BestellungServiceImpl bestellungService;
 	
     @RequestMapping("/")
     @ResponseBody
@@ -223,13 +229,13 @@ public class RESTController{
 	/*
 	 * {
 	 *	"name": "Senseo",
-	 *	"kategorie": "123-321-123-2",
+	 *	"kategorie": "7f6a34cc-ba70-45df-9d20-0e873cfeba6e",
 	 *	"bestand": "150",
 	 *	"beschreibung": "Senseo Tabs. Die Senseotabs haben ein besonderes Geschmacksaroma.",
 	 *	"punkte": "4",
 	 *	"uri": "https://www.senseo.de/siteassets/kaffee/klassiker/nmsenseo_classic_left_relaunch_ge_cw23_2015.png?preset=blendpage-page-image",
 	 *	"hausnummer": "40",
-	 *	"einkaufspreis": "2,49",
+	 *	"einkaufspreis": "2.49",
 	 *	"waehrung": "EUR"
 	 *}
 	 */
@@ -371,4 +377,55 @@ public class RESTController{
 	
     //----------- updateKategorie --------
 	//TODO
+	
+	
+	//----------- createBestellung -------
+	/*
+	 * {
+	 *	"nutzerid": "12543-2245-211",
+	 *	"produktid": "123-321-2334",
+	 *	"menge": "11",
+	 *	"status": "OFFEN"
+	 *}
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@RequestMapping(value = "/bestellung", method = RequestMethod.POST)
+	public ResponseEntity<?> createBestellung(@RequestBody Bestellung bestellung, UriComponentsBuilder uriCB) throws Exception{
+        logger.info("Creating Kategorie : {}", bestellung);
+        
+        //TODO Id is never the same - therefore use another combination
+        if (kategorieService.kategorieExists(bestellung.getId())) {
+            logger.error("Unable to create. A Kategorie with ID {} already exist", bestellung.getId());
+            return new ResponseEntity(new HTTPError("Unable to create. A Produkt with name " + 
+            bestellung.getId() + " already exist."),HttpStatus.CONFLICT);
+        }
+        bestellungService.saveBestellung(bestellung);
+ 
+        HttpHeaders headers = new HttpHeaders();
+        
+        headers.setLocation(uriCB.path("/kategorie/{id}").buildAndExpand(bestellung.getId()).toUri());
+        return new ResponseEntity<String>(headers, HttpStatus.CREATED);
+	}
+	
+	//----------- getBestellung ----------
+	//----------- getBestellungen --------
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@RequestMapping(value = "/bestellung", method = RequestMethod.GET)
+	public ResponseEntity<List<Bestellung>> getBestellungen(){
+		logger.info("Fetching all Bestellungen");
+		
+		List<Bestellung> bestellungen = bestellungService.getBestellungen();
+		if(bestellungen.isEmpty()) {
+			logger.info("No bestellungen in database");
+			return new ResponseEntity(new HTTPError("No bestellungen in database"), HttpStatus.NOT_FOUND);
+		}
+		
+		return new ResponseEntity<List<Bestellung>>(bestellungen, HttpStatus.OK);
+	}
+	
+	//----------- updateBestellung -------
+	//----------- updateBestellungen -----
+	//----------- createBestellungen -----
+	//----------- deleteBestellung -------
+	//----------- deleteAllBestellungen --
 }
