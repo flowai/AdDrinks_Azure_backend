@@ -5,11 +5,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import de.addrinks.backend.azure.MongoDBController;
 import de.addrinks.backend.model.Bestellung;
 import de.addrinks.backend.model.Kategorie;
 
+@Service
 public class BestellungServiceImpl implements BestellungService {
 	public static final Logger logger = LoggerFactory.getLogger(KategorieServiceImpl.class);
 	

@@ -382,8 +382,8 @@ public class RESTController{
 	//----------- createBestellung -------
 	/*
 	 * {
-	 *	"nutzerid": "12543-2245-211",
-	 *	"produktid": "123-321-2334",
+	 *	"nutzerId": "12543-2245-211",
+	 *	"produktId": "123-321-2334",
 	 *	"menge": "11",
 	 *	"status": "OFFEN"
 	 *}
