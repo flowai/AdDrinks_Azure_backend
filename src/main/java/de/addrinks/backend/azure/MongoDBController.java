@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 
+import de.addrinks.backend.model.Abonnement;
 import de.addrinks.backend.model.Bestellung;
 import de.addrinks.backend.model.Kategorie;
 import de.addrinks.backend.model.Produkt;
@@ -227,6 +228,24 @@ public class MongoDBController {
 		
 		List<Bestellung> bestellungen = datastore.createQuery(Bestellung.class).asList();
 		return bestellungen;
+	}
+
+	public void insertAbonnement(Abonnement abo) throws Exception {
+		logger.info("Save document to database");
+		
+		try{
+			Key<Abonnement> key = datastore.save(abo);			
+		}catch(Exception e){
+			logger.error("Document was not saved to Database.");
+			throw new Exception("Document was not saved to Database", e);
+		}	
+	}
+
+	public List<Abonnement> getAbonnements() {
+		logger.info("Get all Abonnements");
+		
+		List<Abonnement> abonnements = datastore.createQuery(Abonnement.class).asList();
+		return abonnements;
 	}
 	
 

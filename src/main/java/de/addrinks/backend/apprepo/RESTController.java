@@ -18,10 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import de.addrinks.backend.error.HTTPError;
+import de.addrinks.backend.model.Abonnement;
 import de.addrinks.backend.model.Bestellung;
 import de.addrinks.backend.model.Kategorie;
 import de.addrinks.backend.model.Produkt;
 import de.addrinks.backend.model.User;
+import de.addrinks.backend.service.AbonnementServiceImpl;
 import de.addrinks.backend.service.BestellungService;
 import de.addrinks.backend.service.BestellungServiceImpl;
 import de.addrinks.backend.service.KategorieServiceImpl;
@@ -49,6 +51,9 @@ public class RESTController{
 	
 	@Autowired
 	BestellungServiceImpl bestellungService;
+	
+	@Autowired
+	AbonnementServiceImpl abonnementService;
 	
     @RequestMapping("/")
     @ResponseBody
@@ -394,7 +399,7 @@ public class RESTController{
         logger.info("Creating Kategorie : {}", bestellung);
         
         //TODO Id is never the same - therefore use another combination
-        if (kategorieService.kategorieExists(bestellung.getId())) {
+        if (kategorieService.bestellungExists(bestellung.getId())) {
             logger.error("Unable to create. A Kategorie with ID {} already exist", bestellung.getId());
             return new ResponseEntity(new HTTPError("Unable to create. A Produkt with name " + 
             bestellung.getId() + " already exist."),HttpStatus.CONFLICT);
@@ -428,4 +433,49 @@ public class RESTController{
 	//----------- createBestellungen -----
 	//----------- deleteBestellung -------
 	//----------- deleteAllBestellungen --
+	
+	
+	//----------- createAbonnement -------
+	/*
+	 * {
+	 *	"nutzerId": "12543-2245-211",
+	 *	"produktId": "123-321-2334",
+	 *	"menge": "11",
+	 *	"status": "OFFEN"
+	 *}
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@RequestMapping(value = "/abonnement", method = RequestMethod.POST)
+	public ResponseEntity<?> createAbonnement(@RequestBody Abonnement abonnement, UriComponentsBuilder uriCB) throws Exception{
+        logger.info("Creating Abonnement : {}", abonnement);
+        
+        //TODO Id is never the same - therefore use another combination
+        if (abonnementService.abonnementExists(abonnement.getId())) {
+            logger.error("Unable to create. An Abonnement with ID {} already exist", abonnement.getId());
+            return new ResponseEntity(new HTTPError("Unable to create. A Produkt with name " + 
+            abonnement.getId() + " already exist."),HttpStatus.CONFLICT);
+        }
+        abonnementService.saveAbonnement(abonnement);
+ 
+        HttpHeaders headers = new HttpHeaders();
+        
+        headers.setLocation(uriCB.path("/kategorie/{id}").buildAndExpand(abonnement.getId()).toUri());
+        return new ResponseEntity<String>(headers, HttpStatus.CREATED);
+	}
+	
+	//----------- getAbonnements ---------
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@RequestMapping(value = "/abonnements", method = RequestMethod.GET)
+	public ResponseEntity<List<Abonnement>> getAbonnements(){
+		logger.info("Fetching all Bestellungen");
+		
+		List<Abonnement> abonnements = abonnementService.getAbonnements();
+		if(abonnements.isEmpty()) {
+			logger.info("No abonnements in database");
+			return new ResponseEntity(new HTTPError("No abonnements in database"), HttpStatus.NOT_FOUND);
+		}
+		
+		return new ResponseEntity<List<Abonnement>>(abonnements, HttpStatus.OK);
+	}
+	
 }
