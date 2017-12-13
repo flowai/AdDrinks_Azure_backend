@@ -1,6 +1,7 @@
 package de.addrinks.backend.service;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,5 +28,10 @@ public class AbonnementServiceImpl implements AbonnementService {
 		logger.info("Get all Abonnements");
 		List<Abonnement> abonnements = mongoDBController.getAbonnements();
 		return abonnements;
+	}
+
+	public boolean abonnementExists(UUID id) {
+		logger.info("Check if Document is existing");
+		return mongoDBController.existAbonnement(id);
 	}
 }
